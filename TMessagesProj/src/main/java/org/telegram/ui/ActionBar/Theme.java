@@ -3574,6 +3574,9 @@ public class Theme {
     public static final int key_chats_secretName = colorsCount++;
     public static final int key_chats_secretIcon = colorsCount++;
     public static final int key_chats_pinnedIcon = colorsCount++;
+    public static final int key_chats_muteBackground = colorsCount++;
+    public static final int key_chats_readBackground = colorsCount++;
+    public static final int key_chats_pinBackground = colorsCount++; 
     public static final int key_chats_archiveBackground = colorsCount++;
     public static final int key_chats_archivePinBackground = colorsCount++;
     public static final int key_chats_archiveIcon = colorsCount++;

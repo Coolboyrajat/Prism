@@ -2591,6 +2591,7 @@
     <string name="SwipeSettingsMute">Mute</string>
     <string name="SwipeSettingsDelete">Delete</string>
     <string name="SwipeSettingsFolders">Change Folder</string>
+    <string name="SwipeSettingsAdvanced">Advanced</string>
     <string name="SwipeUnmute">Unmute</string>
     <string name="SwipeMute">Mute</string>
     <string name="SwipeDeleteChat">Delete</string>

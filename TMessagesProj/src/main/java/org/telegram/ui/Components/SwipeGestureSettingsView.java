@@ -56,6 +56,7 @@ public class SwipeGestureSettingsView extends FrameLayout {
     int[][] backgroundKeys = new int[7][];
     RLottieDrawable[] icons = new RLottieDrawable[7];
 
+>>>>>>> 5c5c10591cada118a2d56111737b1bfe1211e07e
     int currentIconIndex;
     RLottieImageView[] iconViews = new RLottieImageView[2];
 
@@ -402,6 +403,21 @@ public class SwipeGestureSettingsView extends FrameLayout {
             picker.changeValueByOne(true);
         }
     }
+<<<<<<< HEAD
+
+    private int getConditionIndex() {
+        // if (/* condition for SWIPE_GESTURE_MUTE */) {
+        //     return 0;
+        // } else if (/* condition for SWIPE_GESTURE_PIN */) {
+        //     return 1;
+        // } else if (/* condition for SWIPE_GESTURE_READ */) {
+        //     return 2;
+        // }
+        return 0; // Default to the first color
+    }
+}
+=======
+>>>>>>> 5c5c10591cada118a2d56111737b1bfe1211e07e
 
     private int getConditionIndex() {
         if (/* condition for SWIPE_GESTURE_MUTE */) {
