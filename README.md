@@ -1,3 +1,101 @@
+## Change_logs
+
+### Telegram/TMessagesProj/src/main/java/org/telegram/ui/Components/SwipeGestureSettingsView.java
+
+34.    public static final int SWIPE_GESTURE_ADVANCED = 6;
+
+45.    private boolean isCustomizeMode = false;
+46.
+47.    private int[] customAdvancedColors = new int[] {
+48.        Theme.key_chats_muteBackground, 
+49.        Theme.key_chats_readBackground,
+50.        Theme.key_chats_pinBackground,
+51.        Theme.key_dialogSwipeRemove,
+52.	   Theme.key_chats_archivePinBackground
+53.    };
+
+55.    String[] strings = new String[7];
+56.    int[][] backgroundKeys = new int[7][]; 
+57.    RLottieDrawable[] icons = new RLottieDrawable[7];  
+
+78.    strings[SWIPE_GESTURE_ADVANCED] = LocaleController.getString(R.string.SwipeSettingsAdvanced);
+79.
+80.    backgroundKeys[SWIPE_GESTURE_PIN] = new int[] {Theme.key_chats_pinBackground};
+81.    backgroundKeys[SWIPE_GESTURE_READ] = new int[] {Theme.key_chats_readBackground};
+82.    backgroundKeys[SWIPE_GESTURE_ARCHIVE] = new int[] {Theme.key_chats_archiveBackground};
+83.    backgroundKeys[SWIPE_GESTURE_MUTE] = new int[] {Theme.key_chats_muteBackground};
+84.    backgroundKeys[SWIPE_GESTURE_DELETE] = new int[] {Theme.key_dialogSwipeRemove};
+85.    backgroundKeys[SWIPE_GESTURE_FOLDERS] = new int[] {Theme.key_chats_archivePinBackground};
+86.    backgroundKeys[SWIPE_GESTURE_ADVANCED] = new int[] {
+            Theme.key_chats_muteBackground, 
+            Theme.key_chats_readBackground, 
+            Theme.key_chats_pinBackground 
+        };
+
+157.        public void setCustomizeMode(boolean isCustomizeMode) {
+158.            this.isCustomizeMode = isCustomizeMode;
+159.    
+160.            if (isCustomizeMode) {
+161.                    backgroundKeys[SWIPE_GESTURE_ADVANCED] = customAdvancedColors;
+162.            } else {
+163.                backgroundKeys[SWIPE_GESTURE_ADVANCED] = new int[] {
+164.                    Theme.key_chats_muteBackground, 
+165.                    Theme.key_chats_readBackground, 
+166.                    Theme.key_chats_pinBackground
+167.                };
+168.            }
+169.
+170.            invalidate();
+171.        }
+172.
+173.    public void updateCustomAdvancedColors(int[] newColors) {
+174.        customAdvancedColors = newColors;
+175.
+176.        if (isCustomizeMode) {
+177.            backgroundKeys[SWIPE_GESTURE_ADVANCED] = customAdvancedColors;
+178.            invalidate();
+179.        }
+180.    }
+
+
+255.    int color;
+256.    if (picker.getValue() == SWIPE_GESTURE_ADVANCED) {
+257.            int conditionIndex = getConditionIndex();
+258.            color = Theme.getColor(backgroundKeys[SWIPE_GESTURE_ADVANCED][conditionIndex]);
+259.    } else if (currentColorKey < 0) {...}
+
+
+405.    private int getConditionIndex() {
+        if (/* condition for SWIPE_GESTURE_MUTE */) {
+            return 0;
+        } else if (/* condition for SWIPE_GESTURE_PIN */) {
+            return 1;
+        } else if (/* condition for SWIPE_GESTURE_READ */) {
+            return 2;
+        }
+        return 0; // Default to the first color
+    }
+
+
+
+
+### Telegram/TMessagesProj/src/main/java/org/telegram/messenger/SharedConfig.java
+
+### Telegram/TMessagesProj/src/main/java/org/telegram/messenger/MessagesController.java
+
+### Telegram/TMessagesProj/src/main/java/org/telegram/messenger/ChatObject.java
+
+### Telegram/TMessagesProj/src/main/java/org/telegram/ui/SwipeGestureSettingsActivity.java (new File created)
+
+### Telegram/TMessagesProj/src/main/java/org/telegram/Components/ChatListView.java
+
+### Telegram/TMessagesProj/src/main/java/org/telegram/ui/Theme.java
+
+### Telegram/TMessagesProj/src/main/res/values/strings.xml
+
+### Telegram/TMessagesProj/src/main/res/values/colors.xml
+
+
 ## Telegram messenger for Android
 
 [Telegram](https://telegram.org) is a messaging app with a focus on speed and security. It’s superfast, simple and free.
