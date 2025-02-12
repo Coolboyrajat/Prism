@@ -6,9 +6,12 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.RectF;
+import android.os.Build;
 import android.view.Gravity;
 import android.view.HapticFeedbackConstants;
 import android.view.View;
+import android.view.accessibility.AccessibilityEvent;
+import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.FrameLayout;
 
 import androidx.core.graphics.ColorUtils;
@@ -28,6 +31,7 @@ public class SwipeGestureSettingsView extends FrameLayout {
     public static final int SWIPE_GESTURE_MUTE = 3;
     public static final int SWIPE_GESTURE_DELETE = 4;
     public static final int SWIPE_GESTURE_FOLDERS = 5;
+    public static final int SWIPE_GESTURE_ADVANCED = 6;
 
     Paint outlinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     Paint filledPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -38,9 +42,19 @@ public class SwipeGestureSettingsView extends FrameLayout {
 
     private NumberPicker picker;
 
-    String[] strings = new String[6];
-    String[] backgroundKeys = new String[6];
-    RLottieDrawable[] icons = new RLottieDrawable[6];
+    private boolean isCustomizeMode = false;
+
+    private int[] customAdvancedColors = new int[] {
+        Theme.key_chats_muteBackground, 
+        Theme.key_chats_readBackground,
+        Theme.key_chats_pinBackground, 
+        Theme.key_dialogSwipeRemove,
+        Theme.key_chats_archivePinBackground
+    };
+
+    String[] strings = new String[7];
+    int[][] backgroundKeys = new int[7][];
+    RLottieDrawable[] icons = new RLottieDrawable[7];
 
     int currentIconIndex;
     RLottieImageView[] iconViews = new RLottieImageView[2];
@@ -49,25 +63,31 @@ public class SwipeGestureSettingsView extends FrameLayout {
     float progressToSwipeFolders;
     float colorProgress = 1f;
     int fromColor;
-    String currentColorKey;
+    int currentColorKey;
 
 
     public SwipeGestureSettingsView(Context context, int currentAccount) {
         super(context);
 
-        strings[SWIPE_GESTURE_PIN] = LocaleController.getString("SwipeSettingsPin", R.string.SwipeSettingsPin);
-        strings[SWIPE_GESTURE_READ] = LocaleController.getString("SwipeSettingsRead", R.string.SwipeSettingsRead);
-        strings[SWIPE_GESTURE_ARCHIVE] = LocaleController.getString("SwipeSettingsArchive", R.string.SwipeSettingsArchive);
-        strings[SWIPE_GESTURE_MUTE] = LocaleController.getString("SwipeSettingsMute", R.string.SwipeSettingsMute);
-        strings[SWIPE_GESTURE_DELETE] = LocaleController.getString("SwipeSettingsDelete", R.string.SwipeSettingsDelete);
-        strings[SWIPE_GESTURE_FOLDERS] = LocaleController.getString("SwipeSettingsFolders", R.string.SwipeSettingsFolders);
+        strings[SWIPE_GESTURE_PIN] = LocaleController.getString(R.string.SwipeSettingsPin);
+        strings[SWIPE_GESTURE_READ] = LocaleController.getString(R.string.SwipeSettingsRead);
+        strings[SWIPE_GESTURE_ARCHIVE] = LocaleController.getString(R.string.SwipeSettingsArchive);
+        strings[SWIPE_GESTURE_MUTE] = LocaleController.getString(R.string.SwipeSettingsMute);
+        strings[SWIPE_GESTURE_DELETE] = LocaleController.getString(R.string.SwipeSettingsDelete);
+        strings[SWIPE_GESTURE_FOLDERS] = LocaleController.getString(R.string.SwipeSettingsFolders);
+        strings[SWIPE_GESTURE_ADVANCED] = LocaleController.getString(R.string.SwipeSettingsAdvanced);
 
-        backgroundKeys[SWIPE_GESTURE_PIN] = Theme.key_chats_archiveBackground;
-        backgroundKeys[SWIPE_GESTURE_READ] = Theme.key_chats_archiveBackground;
-        backgroundKeys[SWIPE_GESTURE_ARCHIVE] = Theme.key_chats_archiveBackground;
-        backgroundKeys[SWIPE_GESTURE_MUTE] = Theme.key_chats_archiveBackground;
-        backgroundKeys[SWIPE_GESTURE_DELETE] = Theme.key_dialogSwipeRemove;
-        backgroundKeys[SWIPE_GESTURE_FOLDERS] = Theme.key_chats_archivePinBackground;
+        backgroundKeys[SWIPE_GESTURE_PIN] = new int[] {Theme.key_chats_archiveBackground};
+        backgroundKeys[SWIPE_GESTURE_READ] = new int[] {Theme.key_chats_archiveBackground};
+        backgroundKeys[SWIPE_GESTURE_ARCHIVE] = new int[] {Theme.key_chats_archiveBackground};
+        backgroundKeys[SWIPE_GESTURE_MUTE] = new int[] {Theme.key_chats_archiveBackground};
+        backgroundKeys[SWIPE_GESTURE_DELETE] = new int[] {Theme.key_dialogSwipeRemove};
+        backgroundKeys[SWIPE_GESTURE_FOLDERS] = new int[] {Theme.key_chats_archivePinBackground};
+        backgroundKeys[SWIPE_GESTURE_ADVANCED] = new int[] {
+            Theme.key_chats_archiveBackground, 
+            Theme.key_chats_archivePinBackground, 
+            Theme.key_chats_archiveBackground 
+        };
 
         outlinePaint.setStyle(Paint.Style.STROKE);
         outlinePaint.setStrokeWidth(AndroidUtilities.dp(1));
@@ -96,15 +116,19 @@ public class SwipeGestureSettingsView extends FrameLayout {
         picker.setDrawDividers(false);
         hasTabs = !MessagesController.getInstance(currentAccount).dialogFilters.isEmpty();
         picker.setMaxValue(hasTabs ? strings.length - 1 : strings.length - 2);
+        picker.setAllItemsCount(hasTabs ? strings.length : strings.length - 1);
+        picker.setWrapSelectorWheel(true);
         picker.setFormatter(value -> strings[value]);
         picker.setOnValueChangedListener((picker, oldVal, newVal) -> {
             swapIcons();
 
             SharedConfig.updateChatListSwipeSetting(newVal);
             invalidate();
-            picker.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP, HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING);
+            try {
+                picker.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP, HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING);
+            } catch (Exception ignored) {}
         });
-
+        picker.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
         picker.setValue(SharedConfig.getChatSwipeAction(currentAccount));
 
         addView(picker, LayoutHelper.createFrame(132, LayoutHelper.MATCH_PARENT, Gravity.RIGHT, 21, 0, 21, 0));
@@ -128,6 +152,31 @@ public class SwipeGestureSettingsView extends FrameLayout {
         progressToSwipeFolders = picker.getValue() == SWIPE_GESTURE_FOLDERS ? 1f : 0;
         currentIconValue = picker.getValue();
 
+    }
+
+    public void setCustomizeMode(boolean isCustomizeMode) {
+        this.isCustomizeMode = isCustomizeMode;
+
+        if (isCustomizeMode) {
+            backgroundKeys[SWIPE_GESTURE_ADVANCED] = customAdvancedColors;
+        } else {
+            backgroundKeys[SWIPE_GESTURE_ADVANCED] = new int[] {
+                Theme.key_chats_muteBackground, 
+                Theme.key_chats_readBackground, 
+                Theme.key_chats_pinBackground
+            };
+        }
+
+        invalidate();
+    }
+
+    public void updateCustomAdvancedColors(int[] newColors) {
+        customAdvancedColors = newColors;
+
+        if (isCustomizeMode) {
+            backgroundKeys[SWIPE_GESTURE_ADVANCED] = customAdvancedColors;
+            invalidate();
+        }
     }
 
     int currentIconValue;
@@ -204,12 +253,15 @@ public class SwipeGestureSettingsView extends FrameLayout {
 
 
         int color;
-        if (currentColorKey == null) {
+        if (picker.getValue() == SWIPE_GESTURE_ADVANCED) {
+            int conditionIndex = getConditionIndex();
+            color = Theme.getColor(backgroundKeys[SWIPE_GESTURE_ADVANCED][conditionIndex]);
+        } else if (currentColorKey < 0) {
             currentColorKey = backgroundKeys[picker.getValue()];
             colorProgress = 1f;
             color = ColorUtils.blendARGB(Theme.getColor(Theme.key_windowBackgroundWhite), Theme.getColor(currentColorKey), 0.9f);
             fromColor = color;
-        } else if (!backgroundKeys[picker.getValue()].equals(currentColorKey)) {
+        } else if (backgroundKeys[picker.getValue()] != currentColorKey) {
             fromColor = ColorUtils.blendARGB(fromColor, ColorUtils.blendARGB(Theme.getColor(Theme.key_windowBackgroundWhite), Theme.getColor(currentColorKey), 0.9f), colorProgress);
             colorProgress = 0;
             currentColorKey = backgroundKeys[picker.getValue()];
@@ -327,4 +379,39 @@ public class SwipeGestureSettingsView extends FrameLayout {
         picker.setTextColor(Theme.getColor(Theme.key_dialogTextBlack));
         picker.invalidate();
     }
+
+    @Override
+    public void onInitializeAccessibilityNodeInfo(AccessibilityNodeInfo info) {
+        super.onInitializeAccessibilityNodeInfo(info);
+        info.setEnabled(true);
+        info.setContentDescription(strings[picker.getValue()]);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            info.addAction(new AccessibilityNodeInfo.AccessibilityAction(AccessibilityNodeInfo.ACTION_CLICK, null));
+        }
+    }
+
+    @Override
+    public void onInitializeAccessibilityEvent(AccessibilityEvent event) {
+        super.onInitializeAccessibilityEvent(event);
+        if (event.getEventType() == AccessibilityEvent.TYPE_VIEW_CLICKED) {
+            int newValue = picker.getValue() + 1;
+            if (newValue > picker.getMaxValue() || newValue < 0) {
+                newValue = 0;
+            }
+            setContentDescription(strings[newValue]);
+            picker.changeValueByOne(true);
+        }
+    }
+
+    private int getConditionIndex() {
+        if (/* condition for SWIPE_GESTURE_MUTE */) {
+            return 0;
+        } else if (/* condition for SWIPE_GESTURE_PIN */) {
+            return 1;
+        } else if (/* condition for SWIPE_GESTURE_READ */) {
+            return 2;
+        }
+        return 0; // Default to the first color
+    }
+
 }
