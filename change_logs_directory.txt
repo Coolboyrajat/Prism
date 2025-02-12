@@ -87,8 +87,16 @@
 
 # Telegram/TMessagesProj/src/main/java/org/telegram/Components/ChatListView.java
 
-# Telegram/TMessagesProj/src/main/java/org/telegram/ui/Theme.java
+# Telegram/TMessagesProj/src/main/java/org/telegram/ui/ActionBar/Theme.java
+
+3577.    public static final int key_chats_muteBackground = colorsCount++;
+3578.    public static final int key_chats_readBackground = colorsCount++;
+3579.    public static final int key_chats_pinBackground = colorsCount++; 
+
 
 # Telegram/TMessagesProj/src/main/res/values/strings.xml
+
+2594.    <string name="SwipeSettingsAdvanced">Advanced</string>
+
 
 # Telegram/TMessagesProj/src/main/res/values/colors.xml
